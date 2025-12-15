@@ -1,18 +1,18 @@
-# app.py - V4.0 Profesyonel UI Tasarımı
+# app.py - Sidebar Düzeltilmiş Sürüm (V4.1)
 
 import streamlit as st
 from collections import Counter
 from fpdf import FPDF
 
-# --- 1. SAYFA AYARLARI VE CSS STİLİ (GÖRSEL MAKYAJ) ---
+# --- 1. SAYFA AYARLARI VE CSS STİLİ ---
 st.set_page_config(
     page_title="Warfarin Asistanı",
     page_icon="❤️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded" # Uygulama açılınca sidebar açık gelsin
 )
 
-# Özel CSS: Uygulamanın görünümünü tamamen değiştirir
+# Özel CSS
 st.markdown("""
     <style>
     /* Genel Arka Plan */
@@ -26,13 +26,21 @@ st.markdown("""
         border-right: 1px solid #e0e0e0;
     }
     
+    /* Sidebar Açma/Kapama Butonunun Olduğu Üst Barı GİZLEME (DÜZELTME) */
+    /* header {visibility: hidden;}  <-- BU SATIR SİLİNDİ */
+    
+    /* Sadece sağ üstteki 3 nokta ve 'Deploy' yazısını gizle */
+    #MainMenu {visibility: hidden;}
+    .stDeployButton {display:none;}
+    footer {visibility: hidden;}
+    
     /* Başlıklar */
     h1, h2, h3 {
-        color: #0d47a1; /* Koyu Mavi */
+        color: #0d47a1; 
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
-    /* Ana Buton (Hesapla) */
+    /* Ana Buton */
     div.stButton > button {
         background-color: #1976d2;
         color: white;
@@ -50,7 +58,7 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    /* İkincil Buton (PDF İndir) */
+    /* İkincil Buton */
     div[data-testid="stDownloadButton"] > button {
         background-color: #ffffff;
         color: #1976d2;
@@ -58,11 +66,6 @@ st.markdown("""
         border-radius: 12px;
         font-weight: bold;
     }
-    
-    /* Streamlit'in kendi menülerini gizle (App hissi için) */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
     
     /* Kartların Stili */
     .dose-card {
@@ -90,7 +93,7 @@ PARCA_ADLARI = {
 POSSIBLE_DAILY_DOSES = sorted(list(set(DOZ_SEVIYELERI_MG.values())))
 RUTIN_ADAYLAR = [d for d in POSSIBLE_DAILY_DOSES if d > 0.0]
 
-# --- 3. ALGORİTMA FONKSİYONLARI (V3.3 Mantığı Korundu) ---
+# --- 3. ALGORİTMA FONKSİYONLARI ---
 
 def homojen_dagit(doz_listesi):
     if not doz_listesi: return []
@@ -153,11 +156,9 @@ def create_pdf(doktor_adi, inr, hedef_alt, hedef_ust, doz_listesi, standart_list
     pdf.set_font("Arial", 'B', 16)
     pdf.cell(0, 10, txt="Warfarin Doz Takip Cizelgesi", ln=True, align='C')
     pdf.ln(5)
-    
     dr_clean = temizle(doktor_adi)
     pdf.set_font("Arial", size=10)
     pdf.cell(0, 10, txt=f"Duzenleyen Hekim: {dr_clean}", ln=True, align='R')
-    
     pdf.set_font("Arial", size=12)
     pdf.cell(0, 10, txt=f"Guncel INR: {inr} (Hedef: {hedef_alt} - {hedef_ust})", ln=True, align='L')
     
@@ -166,7 +167,6 @@ def create_pdf(doktor_adi, inr, hedef_alt, hedef_ust, doz_listesi, standart_list
         pdf.set_font("Arial", 'B', 12)
         pdf.cell(0, 10, txt=f"DIKKAT: Ilk {gun_atla_sayisi} gun ilac ALINMAYACAKTIR.", ln=True, align='L')
         pdf.set_text_color(0, 0, 0)
-    
     if klinik_notlar:
         pdf.set_font("Arial", 'I', 10)
         pdf.multi_cell(0, 6, txt=f"Not: {temizle(klinik_notlar)}")
@@ -177,7 +177,6 @@ def create_pdf(doktor_adi, inr, hedef_alt, hedef_ust, doz_listesi, standart_list
     pdf.cell(35, 8, "Gun", 1, 0, 'C', 1)
     pdf.cell(85, 8, "Uygulanacak Doz", 1, 0, 'C', 1)
     pdf.cell(30, 8, "mg", 1, 1, 'C', 1)
-    
     pdf.set_font("Arial", size=10)
     toplam = 0
     for i, gun in enumerate(HAFTANIN_GUNLERI):
@@ -206,7 +205,7 @@ def create_pdf(doktor_adi, inr, hedef_alt, hedef_ust, doz_listesi, standart_list
 # --- 4. STREAMLIT ARAYÜZÜ ---
 
 def app_arayuzu():
-    # Üst Logo ve Başlık Alanı
+    # Logo ve Başlık
     col1, col2 = st.columns([1, 6])
     with col1:
         st.markdown("<div style='font-size: 40px; text-align: center;'>❤️</div>", unsafe_allow_html=True)
@@ -238,10 +237,9 @@ def app_arayuzu():
         kanama_var = st.checkbox("Aktif kanama / morarma")
         yeni_ilac = st.checkbox("Yeni ilaç / etkileşim")
 
-    # --- ANA GİRİŞ EKRANI ---
+    # --- ANA EKRAN ---
     st.subheader("💊 Mevcut Haftalık Doz")
     
-    # Doz girişlerini beyaz bir kart içine alalım
     with st.container():
         st.markdown('<div style="background-color: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">', unsafe_allow_html=True)
         
@@ -249,7 +247,6 @@ def app_arayuzu():
         gunluk_dozlar_mg = {}
         toplam_haftalik_doz = 0.0
         
-        # Günleri 7 kolona böl
         cols = st.columns(7)
         for i, gun in enumerate(HAFTANIN_GUNLERI):
             with cols[i]:
@@ -260,13 +257,13 @@ def app_arayuzu():
         st.markdown(f"<div style='text-align:right; color:#1976d2; margin-top:15px; font-size:18px;'><b>Mevcut Toplam: {toplam_haftalik_doz:.2f} mg</b></div>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    st.write("") # Boşluk
+    st.write("") 
     calculate_btn = st.button("ANALİZ ET VE REÇETE OLUŞTUR")
 
     if calculate_btn or 'hesaplandi' in st.session_state:
         st.session_state['hesaplandi'] = True
         
-        # --- MANTIK KISMI ---
+        # MANTIK
         yuzde_degisim = 0.0; durum_mesaji = ""; renk = "green"; klinik_uyari = ""; gun_atla_sayisi = 0
         if kanama_var:
             durum_mesaji = "ACİL: KANAMA RİSKİ"; klinik_uyari = "Hasta aktif kanama belirtiyor. Warfarin kesilmeli."; yuzde_degisim = -1.0; gun_atla_sayisi = 7; renk = "red"
@@ -290,7 +287,7 @@ def app_arayuzu():
 
         st.markdown("---")
         
-        # --- SONUÇ KARTI ---
+        # Sonuç Kartı
         renk_kodu = "#d32f2f" if renk == "red" else "#f57c00" if renk == "orange" else "#2e7d32"
         st.markdown(f"""
             <div style="background-color: {renk_kodu}; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
@@ -301,12 +298,10 @@ def app_arayuzu():
         
         if klinik_uyari: st.error(f"**Klinik Not:** {klinik_uyari}")
 
-        # Slider Alanı
         col_slider, _ = st.columns([2, 1])
         with col_slider:
             final_bakim_hedef = st.slider("Haftalık Rutin Bakım Dozu (mg)", 0.0, hedef_bakim_dozu + 20, hedef_bakim_dozu, 1.25)
         
-        # Hesaplama
         dagilim_standart = optimal_tablet_dagilimi(final_bakim_hedef)
         
         if dagilim_standart:
@@ -317,7 +312,6 @@ def app_arayuzu():
             
             gercek_toplam = sum(doz_listesi)
             
-            # --- TAKVİM GÖRÜNÜMÜ ---
             st.markdown(f"### 🗓️ Reçete Planı (Bu Hafta: {gercek_toplam:.2f} mg)")
             
             cols_cal = st.columns(7)
@@ -327,7 +321,6 @@ def app_arayuzu():
                     rutin_parca = PARCA_ADLARI.get(rutin_mg, f"{rutin_mg}")
                     
                     if mg == 0.0 and i < gun_atla_sayisi:
-                        # Kırmızı ATLA Kartı
                         st.markdown(f"""
                             <div class="dose-card" style="border: 2px solid #ef5350; background-color: #ffebee;">
                                 <div style="font-weight:bold; color:#c62828; margin-bottom:5px;">{gun[:3]}</div>
@@ -336,7 +329,6 @@ def app_arayuzu():
                             </div>
                         """, unsafe_allow_html=True)
                     else:
-                        # Normal Mavi Kart
                         parca = PARCA_ADLARI.get(mg, f"{mg}")
                         bg_color = "#e3f2fd" if mg > 0 else "#f5f5f5"
                         text_color = "#1565c0" if mg > 0 else "#bdbdbd"
@@ -356,7 +348,7 @@ def app_arayuzu():
             pdf_bytes = create_pdf(doktor_adi, guncel_inr, hedef_alt, hedef_ust, doz_listesi, standart_liste, klinik_uyari, gun_atla_sayisi)
             
             st.download_button(
-                label="📄 PDF Reçeteyi İndir",
+                label="📄 PDF Reçete İndir",
                 data=pdf_bytes,
                 file_name=f"warfarin_{doktor_adi.replace(' ', '_')}.pdf",
                 mime="application/pdf",
